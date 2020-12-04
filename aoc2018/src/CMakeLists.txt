@@ -4,6 +4,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(aoc aoc.hpp aoc.cpp)
+macro(aoctarget NAME)
+add_executable(${NAME} ${NAME}.cpp)
+target_link_libraries(${NAME} aoc)
+endmacro()
 
-add_executable(day1a day1a.cpp)
-target_link_libraries(day1a aoc)
+aoctarget(day1a)
+aoctarget(day1b)
+aoctarget(day2a)
