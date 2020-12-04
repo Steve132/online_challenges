@@ -1,11 +1,14 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10)
 project(aoc2020)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 add_executable(day1a day1a.cpp)
 add_executable(day1b day1b.cpp)
 add_executable(day2a day2a.cpp)
 add_executable(day2b day2b.cpp)
 add_executable(day3a day3a.cpp)
 add_executable(day3b day3b.cpp)
+add_executable(day4a day4a.cpp)
+add_executable(day4b day4b.cpp)
