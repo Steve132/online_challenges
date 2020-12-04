@@ -3,4 +3,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+add_library(aoc aoc.hpp aoc.cpp)
+
 add_executable(day1a day1a.cpp)
+target_link_libraries(day1a aoc)

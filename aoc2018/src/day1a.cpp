@@ -1,7 +1,8 @@
 #include<iostream>
+#include "aoc.hpp"
 
 int main(int argc,char** argv)
 {
-	std::cout << "hello world" << std::endl;
+	auto input=aoc::load_input("day1",argc,argv);
 	return 0;
 }
