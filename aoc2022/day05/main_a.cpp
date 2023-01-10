@@ -49,17 +49,18 @@ std::istream& operator>>(std::istream& inp,Crane& crane){
                 if(g=="    "){
                     continue;
                 }
-                if(g=="   \n"){
-                    return true;
-                }
                 if(g[0]=='['){
                     if(i >= crane.stacks.size()){
                         crane.stacks.resize(i+1);
                     }
                     crane.stacks[i].push_back(g[1]);
-                    continue;
                 }
-                return false;
+                else if(g[1] != ' '){
+                    return false;
+                }
+                if(g[3]=='\n'){
+                    return true;
+                }
             }
         }
     };
@@ -103,7 +104,7 @@ const std::string INPUTFILE="../day05/input.in";
 const std::string TESTFILE="../day05/test.in";
 
 int main(int argc,char** argv){
-    std::ifstream input(TESTFILE);
+    std::ifstream input(INPUTFILE);
     Crane crane;
     input >> crane;
     std::cout << crane << std::endl;
