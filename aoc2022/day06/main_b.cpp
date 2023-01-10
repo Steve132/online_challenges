@@ -9,113 +9,44 @@
 #include<array>
 #include<stack>
 #include<string>
+#include<bitset>
 
-
-struct Move{
-    size_t count,source,destination;
-};
-std::istream& operator>>(std::istream& inp,Move& m){
-    std::string t;
-    m=Move{};
-    inp >> t >> m.count >> t >> m.source >> t >> m.destination;
-    m.source-=1;m.destination-=1;
-    return inp;
-}
-
-struct Crane{
-    std::vector<std::vector<char>> stacks;
-    void apply(const Move& m){
-        auto rb=stacks[m.source].begin()+stacks[m.source].size()-m.count;
-        std::copy_n(rb,m.count,std::back_inserter(stacks[m.destination]));
-        stacks[m.source].resize(stacks[m.source].size()-m.count);
+template<size_t N>
+struct stream_queue{
+    std::array<char,N> fifo;
+    size_t consumed_so_far=0;
+    void insert(char c){
+        consumed_so_far++;
+        uint_fast8_t vlast=fifo[N-1];
+        uint_fast8_t vnew=c-'a';
+        std::shift_right(fifo.begin(),fifo.end(),1);
+        fifo[0]=vnew;
+    }
+    bool unique() const {
+        std::bitset<26> reg{0};
+        for(char c : fifo){
+            reg[c]=true;
+        }
+        return consumed_so_far >= N && reg.count()==N;
     }
 };
 
 
 
-std::istream& operator>>(std::istream& inp,Crane& crane){
-    crane=Crane();
-    
-    struct inner{
-        static std::string readFour(std::istream& inp){
-            std::string out="aaaa";
-            for(int i=0;i<4;i++) out[i]=inp.get();        
-            return out;
-        }
-
-        static bool readOneLine(Crane& crane,std::istream& inp){
-            for(int i=0;true;i++){
-                auto g=readFour(inp);
-                if(g=="    "){
-                    continue;
-                }
-                if(g[0]=='['){
-                    if(i >= crane.stacks.size()){
-                        crane.stacks.resize(i+1);
-                    }
-                    crane.stacks[i].push_back(g[1]);
-                }
-                else if(g[1] != ' '){
-                    return false;
-                }
-                if(g[3]=='\n'){
-                    return true;
-                }
-            }
-        }
-    };
-
-    while((inner::readOneLine(crane,inp))){}
-    std::string tmp;
-    getline(inp,tmp);
-    for(auto& st : crane.stacks){
-        std::reverse(st.begin(),st.end());
-    }
-    
-    return inp;
-}
-std::ostream& operator<<(std::ostream& out,const Crane& crane){
-    
-    size_t stackHeight=std::accumulate(crane.stacks.begin(),crane.stacks.end(),0,
-        [](size_t T,const std::vector<char>& st)
-        { 
-            return std::max(T,st.size());
-        });
-    
-
-    for(size_t h=stackHeight;h>0;h--){
-        for(size_t i=0;i<crane.stacks.size();i++){
-            if((h-1) < crane.stacks[i].size()){
-                out << "[" << crane.stacks[i][h-1] << "] ";
-            }
-            else {
-                out << "    ";
-            }
-        }
-        out << "\n";
-    }
-
-    return out;
-}
-
-
-
-const std::string INPUTFILE="../day05/input.in";
-const std::string TESTFILE="../day05/test.in";
+const std::string INPUTFILE="../day06/input.in";
+const std::string TESTFILE="../day06/test.in";
 
 int main(int argc,char** argv){
     std::ifstream input(INPUTFILE);
-    Crane crane;
-    input >> crane;
-    std::cout << crane << std::endl;
-    std::istream_iterator<Move> mi(input),mie;
-    for_each(mi,mie,[&crane](const Move& m){
-        crane.apply(m);
-        std::cout << crane << std::endl;
-    });
-    for(auto& st : crane.stacks){
-        std::cout << st.back();
+    std::istream_iterator<char> instream(input),end;
+
+    stream_queue<14> sq;
+    for(size_t i=0;instream!=end;i++){
+        sq.insert(*instream++);
+        if(i >= 14 && sq.unique()){
+            std::cout << i+1 << std::endl;
+            break;
+        }
     }
-    std::cout << std::endl;
     return 0;
 }

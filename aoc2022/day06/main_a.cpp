@@ -35,7 +35,7 @@ const std::string INPUTFILE="../day06/input.in";
 const std::string TESTFILE="../day06/test.in";
 
 int main(int argc,char** argv){
-    std::ifstream input(TESTFILE);
+    std::ifstream input(INPUTFILE);
     std::istream_iterator<char> instream(input),end;
 
     stream_queue sq;
