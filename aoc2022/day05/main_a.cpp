@@ -10,8 +10,25 @@
 #include<stack>
 #include<string>
 
+
+struct Move{
+    size_t count,source,destination;
+};
+std::istream& operator>>(std::istream& inp,Move& m){
+    std::string t;
+    m=Move{};
+    inp >> t >> m.count >> t >> m.source >> t >> m.destination;
+    m.source-=1;m.destination-=1;
+    return inp;
+}
+
 struct Crane{
     std::vector<std::vector<char>> stacks;
+    void apply(const Move& m){
+        auto rb=stacks[m.source].rbegin();
+        std::copy_n(rb,m.count,std::back_inserter(stacks[m.destination]));
+        stacks[m.source].resize(stacks[m.source].size()-m.count);
+    }
 };
 
 
@@ -81,6 +98,7 @@ std::ostream& operator<<(std::ostream& out,const Crane& crane){
 }
 
 
+
 const std::string INPUTFILE="../day05/input.in";
 const std::string TESTFILE="../day05/test.in";
 
@@ -88,6 +106,15 @@ int main(int argc,char** argv){
     std::ifstream input(TESTFILE);
     Crane crane;
     input >> crane;
-    std::cout << crane;
+    std::cout << crane << std::endl;
+    std::istream_iterator<Move> mi(input),mie;
+    for_each(mi,mie,[&crane](const Move& m){
+        crane.apply(m);
+        std::cout << crane << std::endl;
+    });
+    for(auto& st : crane.stacks){
+        std::cout << st.back();
+    }
+    std::cout << std::endl;
     return 0;
 }
