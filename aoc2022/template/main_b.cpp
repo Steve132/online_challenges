@@ -55,8 +55,8 @@ std::ostream& operator<<(std::ostream& out,const Game& g){
     return out;
 }
 
-const std::string INPUTFILE="../day03/input.in";
-const std::string TESTFILE="../day03/test.in";
+const std::string INPUTFILE="../day02/input.in";
+const std::string TESTFILE="../day02/test.in";
 
 int main(int argc,char** argv){
     std::ifstream input(INPUTFILE);

@@ -9,5 +9,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(day01 day01/main.cpp)
 add_executable(day02a day02/main_a.cpp)
 add_executable(day02b day02/main_b.cpp)
-
+add_executable(day03a day03/main_a.cpp)
+add_executable(day03b day03/main_b.cpp)
 #add_executable(day1b day1b.cpp)
