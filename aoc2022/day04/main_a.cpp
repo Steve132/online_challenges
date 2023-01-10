@@ -42,7 +42,7 @@ const std::string INPUTFILE="../day04/input.in";
 const std::string TESTFILE="../day04/test.in";
 
 int main(int argc,char** argv){
-    std::ifstream input(TESTFILE);
+    std::ifstream input(INPUTFILE);
     std::istream_iterator<Assignment> ing(input),end;
     auto tot=std::accumulate(ing,end,0,[](int tot,const Assignment& g){
         size_t sus=g[0].contains(g[1]) || g[1].contains(g[0]);
