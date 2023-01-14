@@ -169,10 +169,19 @@ int main(int argc,char** argv){
     for(size_t i=0;i<f.rows();i++)
     {
         for(size_t j=0;j<f.columns();j++){
-            std::cout << ((((uint32_t)f.visible(i,j)) & (uint32_t)Forest::Visibility::TOP) ? 1 : 0);
+           // std::cout << ((((uint32_t)f.visible(i,j)) & (uint32_t)Forest::Visibility::TOP) ? 1 : 0);
+           std::cout << std::hex << ((((uint32_t)f.visible(i,j))));
         }
         std::cout << "\n";
     }
+
+
+    size_t numZeros=std::count(f.visible.begin(),f.visible.end(),(uint32_t)0);
+    size_t r=f.rows();
+    size_t c=f.columns();
+    std::cout << std::dec;
+
+    std::cout << "The number of visible trees is " << f.rows() << "," << f.columns() <<  "-" << numZeros << "=" << (f.size()-numZeros) << std::endl;
 
     return 0;
 }
