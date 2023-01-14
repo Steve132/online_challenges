@@ -72,7 +72,7 @@ struct Forest: vector2d<int> {
         BOTTOM=0x08
     };
     using VisibilityMask=uint32_t;
-private:
+
     vector2d<VisibilityMask> visible;
     
 
@@ -83,9 +83,10 @@ public:
         visible=vector2d<VisibilityMask>{heights.rows(),heights.columns()};
         std::fill(visible.begin(),visible.end(),0);
 
-        std::vector<int> vert_max(heights.columns(),0);
-        int horiz_max=0;
+        std::vector<int> vert_max(heights.columns(),-1);
+        int horiz_max;
         for(size_t i=0;i<rows();i++){
+            horiz_max=-1;
             for(size_t j=0;j<columns();j++){
                 int v=heights(i,j);
                 if(v > horiz_max){
@@ -98,10 +99,10 @@ public:
                 }
             }
         }
-        horiz_max=0;
-        std::fill(vert_max.begin(),vert_max.end(),0);
+        std::fill(vert_max.begin(),vert_max.end(),-1);
         for(size_t i=0;i<rows();i++){
             size_t rev_i=rows()-i-1;
+            horiz_max=-1;
             for(size_t j=0;j<columns();j++){
                 size_t rev_j=columns()-j-1;
                 int v=heights(rev_i,rev_j);
@@ -163,7 +164,15 @@ int main(int argc,char** argv){
     std::ifstream input(TESTFILE);
     Forest f;
     input >> f;
-    std::cout << f;
+    std::cout << f << std::endl;;
+    
+    for(size_t i=0;i<f.rows();i++)
+    {
+        for(size_t j=0;j<f.columns();j++){
+            std::cout << ((((uint32_t)f.visible(i,j)) & (uint32_t)Forest::Visibility::TOP) ? 1 : 0);
+        }
+        std::cout << "\n";
+    }
 
     return 0;
 }
