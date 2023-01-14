@@ -133,20 +133,26 @@ const std::string TESTFILE="../day07/test.in";
 int main(int argc,char** argv){
     std::ifstream input(INPUTFILE);
 
-
-
-
     Directory root=parse(input);
     std::cout << root << std::endl;
 
-    size_t tot=0;
-    root.walk([&tot](const Directory& d){
-        if(d.size <=100000 && !d.is_file ){
+    size_t total_space= 70000000;
+    size_t needed_space=30000000;
+    size_t used_space=root.size;
+
+    size_t unused_space=total_space-used_space;
+    size_t todelete_space=needed_space-unused_space;
+
+   
+
+    size_t minsize=used_space;
+    root.walk([&minsize,todelete_space](const Directory& d){
+        if(d.size >=todelete_space && !d.is_file ){
             std::cout << d.name << std::endl;
-            tot+=d.size;
+            minsize= std::min(d.size,minsize);
         }
     }
     );
-    std::cout << tot << std::endl;
+    std::cout << minsize << std::endl;
     return 0;
 }
