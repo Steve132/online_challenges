@@ -10,43 +10,143 @@
 #include<stack>
 #include<string>
 #include<bitset>
+#include<ranges>
 
-template<size_t N>
-struct stream_queue{
-    std::array<char,N> fifo;
-    size_t consumed_so_far=0;
-    void insert(char c){
-        consumed_so_far++;
-        uint_fast8_t vlast=fifo[N-1];
-        uint_fast8_t vnew=c-'a';
-        std::shift_right(fifo.begin(),fifo.end(),1);
-        fifo[0]=vnew;
-    }
-    bool unique() const {
-        std::bitset<26> reg{0};
-        for(char c : fifo){
-            reg[c]=true;
+struct Directory{
+    size_t size;
+    std::string name;
+    std::vector<Directory> children;
+    bool is_file;
+
+    Directory(std::string nm,size_t sz):
+        size(sz),
+        name(nm),
+        is_file(true)
+    {}
+    template<class Iter>
+    Directory(std::string nm,Iter a,Iter b):
+        size(0),
+        name(nm),
+        children{a,b},
+        is_file(false)
+    {
+        for(const auto& c : children){
+            size+=c.size;
         }
-        return consumed_so_far >= N && reg.count()==N;
     }
+
+    template<class F>
+    void walk(F&& f) {
+        f(*this);
+        for(auto& ch : children){
+            ch.walk(f);
+        }
+    };
+    template<class F>
+    void walk(F&& f) const {
+        f(*this);
+        for(const auto& ch : children){
+            ch.walk(f);
+        }
+    };
 };
 
 
 
-const std::string INPUTFILE="../day06/input.in";
-const std::string TESTFILE="../day06/test.in";
+Directory parse_child(std::istream& inp,const std::string& name){
+    std::string dolla,cmd,drop;
+    inp >> dolla >> cmd;
+    std::vector<Directory> children;
+
+    while(inp){
+        size_t sz;
+        inp >> sz;
+        if(!inp.fail()){
+            std::string name;
+            inp >> name;
+            children.emplace_back(name,sz);
+            continue;
+        }
+        inp.clear();
+        inp >> dolla;
+        if(dolla == "dir") {
+            inp >> drop;
+            continue;
+        }
+        if(dolla=="$"){
+            std::string next_name;
+            inp >> drop >> next_name;
+            if(next_name == "..") break;
+            auto child=parse_child(inp,next_name);
+            children.emplace_back(child);
+        }
+    }
+
+    return Directory{name,children.begin(),children.end()};
+}
+
+Directory parse(std::istream& inp){
+    
+    std::string dolla,cmd,name;
+    inp >> dolla >> cmd >> name; //root is beginning of file.
+    return parse_child(inp,name);
+
+}
+
+std::ostream& operator<<(std::ostream& out,const Directory& d){
+    struct inner{
+        static std::ostream& print_indent(std::ostream& out,int level){
+            for(int i=0;i<level;i++) out << "\t";
+            return out;
+        }
+        static void pprint(std::ostream& out,const Directory& d,int level){
+            std::string n=d.name;
+            if(n=="/") n="__root__"; 
+            
+            auto namesize=[&](std::ostream& out){
+                out << "name=\"" << n << "\" size=\"" << d.size << "\"";
+            };
+
+            if(d.is_file) {
+                print_indent(out,level) << "<file ";
+                namesize(out);
+                out << "/>\n";
+            }
+            else{
+                print_indent(out,level) << "<dir ";
+                namesize(out);
+                out << ">\n";
+                for(const auto& ch : d.children){
+                    pprint(out,ch,level+1);
+                }
+                print_indent(out,level) << "</dir>\n";
+            }
+        }
+    };
+    inner::pprint(out,d,0);
+    return out;
+}
+
+const std::string INPUTFILE="../day07/input.in";
+const std::string TESTFILE="../day07/test.in";
 
 int main(int argc,char** argv){
     std::ifstream input(INPUTFILE);
-    std::istream_iterator<char> instream(input),end;
 
-    stream_queue<14> sq;
-    for(size_t i=0;instream!=end;i++){
-        sq.insert(*instream++);
-        if(i >= 14 && sq.unique()){
-            std::cout << i+1 << std::endl;
-            break;
+
+
+
+    Directory root=parse(input);
+    std::cout << root << std::endl;
+
+    size_t tot=0;
+    root.walk([&tot](const Directory& d){
+        if(d.size <=100000 && !d.is_file ){
+            std::cout << d.name << std::endl;
+            tot+=d.size;
         }
     }
+    );
+    std::cout << tot << std::endl;
     return 0;
 }

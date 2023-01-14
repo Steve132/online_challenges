@@ -10,6 +10,7 @@
 #include<stack>
 #include<string>
 #include<bitset>
+#include<ranges>
 
 struct Directory{
     size_t size;
@@ -33,6 +34,21 @@ struct Directory{
             size+=c.size;
         }
     }
+
+    template<class F>
+    void walk(F&& f) {
+        f(*this);
+        for(auto& ch : children){
+            ch.walk(f);
+        }
+    };
+    template<class F>
+    void walk(F&& f) const {
+        f(*this);
+        for(const auto& ch : children){
+            ch.walk(f);
+        }
+    };
 };
 
 
@@ -78,28 +94,36 @@ Directory parse(std::istream& inp){
 }
 
 std::ostream& operator<<(std::ostream& out,const Directory& d){
-    
-    std::string n=d.name;
-    if(n=="/") n="__root__"; 
-    
-    auto namesize=[&](std::ostream& out){
-        out << "name=\"" << n << "\" size=\"" << d.size << "\"";
-    };
-
-    if(d.is_file) {
-        out << "<file ";
-        namesize(out);
-        out << "/>";
-    }
-    else{
-        out << "<dir ";
-        namesize(out);
-        out << ">";
-        for(const auto& ch : d.children){
-            out << ch;
+    struct inner{
+        static std::ostream& print_indent(std::ostream& out,int level){
+            for(int i=0;i<level;i++) out << "\t";
+            return out;
         }
-        out << "</dir>";
-    }
+        static void pprint(std::ostream& out,const Directory& d,int level){
+            std::string n=d.name;
+            if(n=="/") n="__root__"; 
+            
+            auto namesize=[&](std::ostream& out){
+                out << "name=\"" << n << "\" size=\"" << d.size << "\"";
+            };
+
+            if(d.is_file) {
+                print_indent(out,level) << "<file ";
+                namesize(out);
+                out << "/>\n";
+            }
+            else{
+                print_indent(out,level) << "<dir ";
+                namesize(out);
+                out << ">\n";
+                for(const auto& ch : d.children){
+                    pprint(out,ch,level+1);
+                }
+                print_indent(out,level) << "</dir>\n";
+            }
+        }
+    };
+    inner::pprint(out,d,0);
     return out;
 }
 
@@ -107,12 +131,22 @@ const std::string INPUTFILE="../day07/input.in";
 const std::string TESTFILE="../day07/test.in";
 
 int main(int argc,char** argv){
-    std::ifstream input(TESTFILE);
+    std::ifstream input(INPUTFILE);
 
 
 
 
-    Directory d=parse(input);
-    std::cout << d << std::endl;
+    Directory root=parse(input);
+    std::cout << root << std::endl;
+
+    size_t tot=0;
+    root.walk([&tot](const Directory& d){
+        if(d.size <=100000 && !d.is_file ){
+            std::cout << d.name << std::endl;
+            tot+=d.size;
+        }
+    }
+    );
+    std::cout << tot << std::endl;
     return 0;
 }
