@@ -28,6 +28,9 @@ std::ostream& operator<<(std::ostream& out,const Coord2i& f){
 
 }
 
+static inline ssize_t l1norm(const aoc2022::Coord2i c){
+    return std::abs(c.x)+std::abs(c.y);
+}
 
 template<>
 struct std::hash<aoc2022::Coord2i>{

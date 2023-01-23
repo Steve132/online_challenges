@@ -34,6 +34,7 @@ static inline ssize_t sign(ssize_t x){
     return 1; 
 }
 
+
 struct SimulatedRope{
     Coord2i head,tail;
     std::unordered_map<Coord2i,unsigned int> tail_locations;
@@ -42,12 +43,20 @@ struct SimulatedRope{
         head=tail=start;
     }
     void update(const Movement& m){
-        head=head+m;
-        Coord2i vec=head-tail;
-        vec.x=sign(vec.x);
-        vec.y=sign(vec.y);
-        tail=tail+vec;
-        tail_locations[tail]=1;
+        
+        size_t amount=std::max(std::abs(m.x),std::abs(m.y));
+        Coord2i direction{sign(m.x),sign(m.y)};
+        for(size_t i=0;i<amount;i++){
+            head=head+direction;
+            Coord2i vec=head-tail;
+            if(std::abs(vec.x) <= 1 && std::abs(vec.y)<=1) continue;
+
+            vec.x=sign(vec.x);
+            vec.y=sign(vec.y);
+            tail=tail+vec;
+            tail_locations[tail]=1;
+            std::cout << "TM: " << tail << std::endl;
+        }
     }
 };
 
@@ -62,7 +71,7 @@ int main(int argc,char** argv){
     for_each(inmoves,endmoves,[&rope](const Movement& m){
         std::cout << m << std::endl;
         rope.update(m);
-        std::cout << "H:" << rope.head << "T: " << rope.tail << std::endl;
+        std::cout << "H:" << rope.head << " T: " << rope.tail << std::endl;
     });
     
     return 0;
