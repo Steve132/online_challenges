@@ -1,0 +1,204 @@
+#include<iostream>
+#include<vector>
+#include<fstream>
+#include<iterator>
+#include<ranges>
+#include<numeric>
+#include<algorithm>
+#include<unordered_set>
+#include<array>
+#include<stack>
+#include<string>
+#include<bitset>
+#include<ranges>
+
+template<class T>
+struct vector2d: public std::vector<T>{
+private:
+    using base=std::vector<T>;
+    size_t r=0;
+    size_t c=0;
+
+
+    size_t index(size_t i,size_t j) const{
+        return i*c+j;
+    }
+
+public:
+    vector2d()=default;
+    vector2d(size_t tr,size_t tc):r{tr},c{tc},base(tr*tc,T{})
+    {}
+    size_t rows() const{
+        return r;
+    }
+    size_t columns() const{
+        return c;
+    }
+
+    T& operator()(size_t i,size_t j) {
+        return base::operator[](index(i,j));
+    }
+    const T& operator()(size_t i,size_t j) const {
+        return base::operator[](index(i,j));
+    }
+
+
+};
+
+struct Forest: vector2d<int> {
+    enum class Visibility: uint32_t{
+        LEFT=0x01,
+        TOP=0x02,
+        RIGHT=0x04,
+        BOTTOM=0x08
+    };
+    using VisibilityMask=uint32_t;
+
+    vector2d<VisibilityMask> visible;
+    
+
+public:
+    Forest()=default;
+    Forest(const vector2d<int>& heights):vector2d<int>{heights}
+    {
+        visible=vector2d<VisibilityMask>{heights.rows(),heights.columns()};
+        std::fill(visible.begin(),visible.end(),0);
+
+        std::vector<int> vert_max(heights.columns(),-1);
+        int horiz_max;
+        for(size_t i=0;i<rows();i++){
+            horiz_max=-1;
+            for(size_t j=0;j<columns();j++){
+                int v=heights(i,j);
+                if(v > horiz_max){
+                    horiz_max=v;
+                    visible(i,j) |= (VisibilityMask)Visibility::LEFT;
+                }
+                if(v > vert_max[j]){
+                    vert_max[j]=v;
+                    visible(i,j) |= (VisibilityMask)Visibility::TOP;
+                }
+            }
+        }
+        std::fill(vert_max.begin(),vert_max.end(),-1);
+        for(size_t i=0;i<rows();i++){
+            size_t rev_i=rows()-i-1;
+            horiz_max=-1;
+            for(size_t j=0;j<columns();j++){
+                size_t rev_j=columns()-j-1;
+                int v=heights(rev_i,rev_j);
+                if(v > horiz_max){
+                    horiz_max=v;
+                    visible(rev_i,rev_j) |= (VisibilityMask)Visibility::RIGHT;
+                }
+                if(v > vert_max[rev_j]){
+                    vert_max[rev_j]=v;
+                    visible(rev_i,rev_j) |= (VisibilityMask)Visibility::BOTTOM;
+                }
+            }
+        }
+    }
+
+private:
+    size_t count_visible(int mheight,size_t i,size_t j,ssize_t di,ssize_t dj) const {
+        size_t total;
+        for(total=0;((i+di)<(rows())) && ((j+dj)<(columns()));total++){ //underflow trick on purpose here.
+            i+=di;j+=dj;
+            int cur_height=operator()(i,j);
+            if(cur_height >= mheight){
+                return total+1;
+            }
+        }
+        return total;
+    }
+public:
+
+    size_t score(size_t i,size_t j) const {
+        int middle_height=operator()(i,j);
+        size_t score=1;
+
+        score*=count_visible(middle_height,i,j,-1,0);
+        score*=count_visible(middle_height,i,j,0,-1);
+        score*=count_visible(middle_height,i,j,0,1);
+        score*=count_visible(middle_height,i,j,1,0);
+        return score;
+
+
+    }
+};
+    
+
+std::istream& operator>>(std::istream& inp,Forest& f){
+    std::istream_iterator<std::string> is(inp),end;
+    
+    std::vector<int> row;
+    
+    std::vector<std::vector<int>> hv;
+    for(auto& s : std::ranges::subrange(is,end)){
+        row.resize(s.size());
+        hv.reserve(s.size());
+        for(size_t i=0;i<s.size();i++){
+            
+            row[i]=s[i]-'0';
+        }
+        hv.push_back(row);
+    }
+    vector2d<int> hv2{hv.size(),hv[0].size()};
+    for(size_t i=0;i<hv2.rows();i++)
+    for(size_t j=0;j<hv2.columns();j++){
+        hv2(i,j)=hv[i][j];
+    }
+
+    f=Forest{hv2};
+    return inp;
+}
+
+template<class T>
+std::ostream& operator<<(std::ostream& out,const vector2d<T>& f){
+    for(size_t i=0;i<f.rows();i++)
+    {
+        for(size_t j=0;j<f.columns();j++){
+            out << f(i,j);
+        }
+        out << '\n';
+    }
+    return out;
+}
+
+const std::string INPUTFILE="../day08/input.in";
+const std::string TESTFILE="../day08/test.in";
+
+int main(int argc,char** argv){
+    std::ifstream input(INPUTFILE);
+    Forest f;
+    input >> f;
+    std::cout << f << std::endl;;
+    
+    for(size_t i=0;i<f.rows();i++)
+    {
+        for(size_t j=0;j<f.columns();j++){
+           // std::cout << ((((uint32_t)f.visible(i,j)) & (uint32_t)Forest::Visibility::TOP) ? 1 : 0);
+           std::cout << std::hex << ((((uint32_t)f.visible(i,j))));
+        }
+        std::cout << "\n";
+    }
+
+
+    //f.score(1,2);
+    //f.score(3,2);
+
+    size_t msc=0;
+    size_t mi,mj;
+    for(size_t i=0;i<f.rows();i++){
+        for(size_t j=0;j<f.columns();j++){
+            size_t sc=f.score(i,j);
+            if(sc > msc){
+                msc=sc;
+                mi=i;mj=j;
+            }
+        }
+    }
+    std::cout << std::dec << std::endl;
+    std::cout << "mi:" << mi << " mj:" << mj << " msc:" << msc << std::endl;
+    return 0;
+}
