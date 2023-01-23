@@ -1,204 +1,102 @@
-#include<iostream>
-#include<vector>
-#include<fstream>
-#include<iterator>
-#include<ranges>
-#include<numeric>
-#include<algorithm>
-#include<unordered_set>
-#include<array>
-#include<stack>
-#include<string>
-#include<bitset>
-#include<ranges>
+#include <aoc2022/headers.hpp>
+#include <aoc2022/vector2d.hpp>
+#include <aoc2022/coord2i.hpp>
 
-template<class T>
-struct vector2d: public std::vector<T>{
-private:
-    using base=std::vector<T>;
-    size_t r=0;
-    size_t c=0;
+using Coord2i=aoc2022::Coord2i;
 
-
-    size_t index(size_t i,size_t j) const{
-        return i*c+j;
-    }
-
-public:
-    vector2d()=default;
-    vector2d(size_t tr,size_t tc):r{tr},c{tc},base(tr*tc,T{})
-    {}
-    size_t rows() const{
-        return r;
-    }
-    size_t columns() const{
-        return c;
-    }
-
-    T& operator()(size_t i,size_t j) {
-        return base::operator[](index(i,j));
-    }
-    const T& operator()(size_t i,size_t j) const {
-        return base::operator[](index(i,j));
-    }
-
-
+struct Movement : public Coord2i{
 };
 
-struct Forest: vector2d<int> {
-    enum class Visibility: uint32_t{
-        LEFT=0x01,
-        TOP=0x02,
-        RIGHT=0x04,
-        BOTTOM=0x08
-    };
-    using VisibilityMask=uint32_t;
-
-    vector2d<VisibilityMask> visible;
-    
-
-public:
-    Forest()=default;
-    Forest(const vector2d<int>& heights):vector2d<int>{heights}
-    {
-        visible=vector2d<VisibilityMask>{heights.rows(),heights.columns()};
-        std::fill(visible.begin(),visible.end(),0);
-
-        std::vector<int> vert_max(heights.columns(),-1);
-        int horiz_max;
-        for(size_t i=0;i<rows();i++){
-            horiz_max=-1;
-            for(size_t j=0;j<columns();j++){
-                int v=heights(i,j);
-                if(v > horiz_max){
-                    horiz_max=v;
-                    visible(i,j) |= (VisibilityMask)Visibility::LEFT;
-                }
-                if(v > vert_max[j]){
-                    vert_max[j]=v;
-                    visible(i,j) |= (VisibilityMask)Visibility::TOP;
-                }
-            }
-        }
-        std::fill(vert_max.begin(),vert_max.end(),-1);
-        for(size_t i=0;i<rows();i++){
-            size_t rev_i=rows()-i-1;
-            horiz_max=-1;
-            for(size_t j=0;j<columns();j++){
-                size_t rev_j=columns()-j-1;
-                int v=heights(rev_i,rev_j);
-                if(v > horiz_max){
-                    horiz_max=v;
-                    visible(rev_i,rev_j) |= (VisibilityMask)Visibility::RIGHT;
-                }
-                if(v > vert_max[rev_j]){
-                    vert_max[rev_j]=v;
-                    visible(rev_i,rev_j) |= (VisibilityMask)Visibility::BOTTOM;
-                }
-            }
-        }
+std::istream& operator>>(std::istream& inp,Movement& f){
+    std::string dir;int amount;
+    inp >> dir >> amount;
+    char ch=dir[0];
+    switch(ch){
+        case 'U':
+        case 'u':
+            f={0,amount}; break;
+        case 'D':
+        case 'd':
+            f={0,-amount}; break;
+        case 'L':
+        case 'l':
+            f={-amount,0}; break;
+        case 'R':
+        case 'r':
+            f={amount,0}; break;
     }
-
-private:
-    size_t count_visible(int mheight,size_t i,size_t j,ssize_t di,ssize_t dj) const {
-        size_t total;
-        for(total=0;((i+di)<(rows())) && ((j+dj)<(columns()));total++){ //underflow trick on purpose here.
-            i+=di;j+=dj;
-            int cur_height=operator()(i,j);
-            if(cur_height >= mheight){
-                return total+1;
-            }
-        }
-        return total;
-    }
-public:
-
-    size_t score(size_t i,size_t j) const {
-        int middle_height=operator()(i,j);
-        size_t score=1;
-
-        score*=count_visible(middle_height,i,j,-1,0);
-        score*=count_visible(middle_height,i,j,0,-1);
-        score*=count_visible(middle_height,i,j,0,1);
-        score*=count_visible(middle_height,i,j,1,0);
-        return score;
-
-
-    }
-};
-    
-
-std::istream& operator>>(std::istream& inp,Forest& f){
-    std::istream_iterator<std::string> is(inp),end;
-    
-    std::vector<int> row;
-    
-    std::vector<std::vector<int>> hv;
-    for(auto& s : std::ranges::subrange(is,end)){
-        row.resize(s.size());
-        hv.reserve(s.size());
-        for(size_t i=0;i<s.size();i++){
-            
-            row[i]=s[i]-'0';
-        }
-        hv.push_back(row);
-    }
-    vector2d<int> hv2{hv.size(),hv[0].size()};
-    for(size_t i=0;i<hv2.rows();i++)
-    for(size_t j=0;j<hv2.columns();j++){
-        hv2(i,j)=hv[i][j];
-    }
-
-    f=Forest{hv2};
     return inp;
 }
 
-template<class T>
-std::ostream& operator<<(std::ostream& out,const vector2d<T>& f){
-    for(size_t i=0;i<f.rows();i++)
-    {
-        for(size_t j=0;j<f.columns();j++){
-            out << f(i,j);
-        }
-        out << '\n';
-    }
-    return out;
+static inline ssize_t sign(ssize_t x){
+    if(x==0) return 0;
+    if(x < 0) return -1;
+    return 1; 
 }
 
-const std::string INPUTFILE="../day08/input.in";
-const std::string TESTFILE="../day08/test.in";
+struct SimulatedRope{
+    struct Segment{
+        Coord2i position;
+        std::unordered_map<Coord2i,unsigned int> locations;
+        Segment(const Coord2i& start=Coord2i{})
+        {
+            position=start;
+            locations[position]=1;
+        }
+        void update(const Coord2i& head){
+            Coord2i vec=head-position;
+            if(std::abs(vec.x) <= 1 && std::abs(vec.y)<=1) return;
+
+            vec.x=sign(vec.x);
+            vec.y=sign(vec.y);
+            position=position+vec;
+            std::cout << position << std::endl;
+            locations[position]=1;
+        }
+    };
+public:
+
+    std::vector<Segment> segments;
+    SimulatedRope(const Coord2i& start=Coord2i{}):segments(10,start)
+    {
+
+    }
+    void update(const Movement& m){
+        
+        size_t amount=std::max(std::abs(m.x),std::abs(m.y));
+        Coord2i direction{sign(m.x),sign(m.y)};
+        for(size_t i=0;i<amount;i++){
+            segments[0].position=segments[0].position+direction;
+            segments[0].locations[segments[0].position]=1;
+            update_all();
+        }
+    }
+protected:
+    void update_all(){
+
+        for(size_t i=1;i<segments.size();i++){
+            const Segment& head=segments[i-1];
+            Segment& next=segments[i];
+            next.update(head.position);
+        }
+    }
+};
+
+const std::string INPUTFILE="../day09/input.in";
+const std::string TESTFILE="../day09/test2.in";
 
 int main(int argc,char** argv){
     std::ifstream input(INPUTFILE);
-    Forest f;
-    input >> f;
-    std::cout << f << std::endl;;
+
+    std::istream_iterator<Movement> inmoves(input),endmoves;
+    SimulatedRope rope;
+    for_each(inmoves,endmoves,[&rope](const Movement& m){
+        std::cout << m << std::endl;
+        rope.update(m);
+        std::cout << "H:" << rope.segments[0].position << " T: " << rope.segments[1].position << std::endl;
+    });
+
+    std::cout << "Total locations:" << rope.segments.back().locations.size() << std::endl;
     
-    for(size_t i=0;i<f.rows();i++)
-    {
-        for(size_t j=0;j<f.columns();j++){
-           // std::cout << ((((uint32_t)f.visible(i,j)) & (uint32_t)Forest::Visibility::TOP) ? 1 : 0);
-           std::cout << std::hex << ((((uint32_t)f.visible(i,j))));
-        }
-        std::cout << "\n";
-    }
-
-
-    //f.score(1,2);
-    //f.score(3,2);
-
-    size_t msc=0;
-    size_t mi,mj;
-    for(size_t i=0;i<f.rows();i++){
-        for(size_t j=0;j<f.columns();j++){
-            size_t sc=f.score(i,j);
-            if(sc > msc){
-                msc=sc;
-                mi=i;mj=j;
-            }
-        }
-    }
-    std::cout << std::dec << std::endl;
-    std::cout << "mi:" << mi << " mj:" << mj << " msc:" << msc << std::endl;
     return 0;
 }

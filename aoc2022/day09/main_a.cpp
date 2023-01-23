@@ -65,7 +65,7 @@ const std::string INPUTFILE="../day09/input.in";
 const std::string TESTFILE="../day09/test.in";
 
 int main(int argc,char** argv){
-    std::ifstream input(TESTFILE);
+    std::ifstream input(INPUTFILE);
 
     std::istream_iterator<Movement> inmoves(input),endmoves;
     SimulatedRope rope;
