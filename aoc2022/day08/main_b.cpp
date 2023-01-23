@@ -169,7 +169,7 @@ const std::string INPUTFILE="../day08/input.in";
 const std::string TESTFILE="../day08/test.in";
 
 int main(int argc,char** argv){
-    std::ifstream input(TESTFILE);
+    std::ifstream input(INPUTFILE);
     Forest f;
     input >> f;
     std::cout << f << std::endl;;
@@ -184,8 +184,8 @@ int main(int argc,char** argv){
     }
 
 
-    f.score(1,2);
-    f.score(3,2);
+    //f.score(1,2);
+    //f.score(3,2);
 
     size_t msc=0;
     size_t mi,mj;
