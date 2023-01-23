@@ -41,6 +41,7 @@ struct SimulatedRope{
     SimulatedRope(const Coord2i& start=Coord2i{})
     {
         head=tail=start;
+        tail_locations[tail]=1;
     }
     void update(const Movement& m){
         
@@ -73,6 +74,8 @@ int main(int argc,char** argv){
         rope.update(m);
         std::cout << "H:" << rope.head << " T: " << rope.tail << std::endl;
     });
+
+    std::cout << "Total locations:" << rope.tail_locations.size() << std::endl;
     
     return 0;
 }
