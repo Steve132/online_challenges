@@ -9,6 +9,8 @@
 #include<array>
 #include<stack>
 #include<string>
+$include<cstdint>
+#include<cstdlib>
 #include<bitset>
 #include<ranges>
 #include<unordered_map>

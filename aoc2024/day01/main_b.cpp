@@ -16,15 +16,16 @@ int main(int argc,char** argv){
         a[i]=interleaved[2*i];
         b[i]=interleaved[2*i+1];
     }
-    std::sort(a.begin(),a.end());
-    std::sort(b.begin(),b.end());
-
-    size_t total_distance=0;
+    std::unordered_map<size_t,size_t> m;
     for(size_t i=0;i<N;i++){
-        total_distance+=a[i] > b[i] ? a[i]-b[i] : b[i]-a[i];
+        m.emplace(b[i],0).first->second++;
     }
-    
-    std::cout << total_distance << std::endl;
+
+    size_t total_similarity=0;
+    for(size_t i=0;i<N;i++){
+        total_similarity+=a[i]*m[a[i]];
+    }
+    std::cout << total_similarity << std::endl;
 
     return 0;
 }
