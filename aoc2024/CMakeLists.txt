@@ -9,3 +9,5 @@ include_directories(common)
 
 add_executable(day01a day01/main_a.cpp)
 add_executable(day01b day01/main_b.cpp)
+add_executable(day02a day02/main_a.cpp)
+add_executable(day02b day02/main_b.cpp)
